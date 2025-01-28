@@ -1,28 +1,39 @@
+//In lib/services/news_service.dart
+
 import 'dart:convert';
+
 import 'package:http/http.dart' as http;
 
 class NewsService {
-  static const String _apiKey ='959ea5e7296a44b4a2191fb009b46f33'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
-  static const String _baseUrl = 'https://newsapi.org/v2';
+  final String _baseUrl = 'https://newsapi.org/v2';
+  final String _apiKey = '959ea5e7296a44b4a2191fb009b46f33Y';
 
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
-    'Amerika Birleşik Devletleri': 'us',
-    'Birleşik Krallık': 'gb',
     'Almanya': 'de',
+    'ABD': 'us',
+    'Birleşik Krallık': 'gb',
     'Fransa': 'fr',
     'İtalya': 'it',
     'İspanya': 'es',
-    'Portekiz': 'pt',
-    'Hollanda': 'nl',
-    'Belçika': 'be',
-    'İsviçre': 'ch',
-    'Avusturya': 'at',
-    'İsveç': 'se',
-    'Norveç': 'no',
-    'Danimarka': 'dk',
-    'Finlandiya': 'fi',
+    'Japonya': 'jp',
+    'Çin': 'cn',
+    'Hindistan': 'in',
+    'Kanada': 'ca',
+    'Avustralya': 'au',
+    'Güney Kore': 'kr',
+    'Brezilya': 'br',
+    'Meksika': 'mx',
+    'Arjantin': 'ar',
     'Rusya': 'ru',
+    'Hollanda': 'nl',
+    'İsveç': 'se',
+    'İsviçre': 'ch',
+    'Belçika': 'be',
+    'Avusturya': 'at',
+    'Danimarka': 'dk',
+    'Norveç': 'no',
+    'Finlandiya': 'fi',
     'Polonya': 'pl',
     'Çek Cumhuriyeti': 'cz',
     'Yunanistan': 'gr',
@@ -30,16 +41,8 @@ class NewsService {
     'Romanya': 'ro',
     'Bulgaristan': 'bg',
     'Ukrayna': 'ua',
-    'Japonya': 'jp',
-    'Güney Kore': 'kr',
-    'Çin': 'cn',
-    'Hindistan': 'in',
-    'Avustralya': 'au',
-    'Yeni Zelanda': 'nz',
-    'Kanada': 'ca',
-    'Meksika': 'mx',
-    'Brezilya': 'br',
-    'Arjantin': 'ar',
+    'İrlanda': 'ie',
+    'Portekiz': 'pt',
     'Güney Afrika': 'za',
     'İsrail': 'il',
     'Mısır': 'eg',
@@ -67,34 +70,17 @@ class NewsService {
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final articles = List<Map<String, dynamic>>.from(data['articles']);
-
-        if (city != null) {
-          return articles
-              .where((article) {
-                final title = article['title']?.toString().toLowerCase() ?? '';
-                final description =
-                    article['description']?.toString().toLowerCase() ?? '';
-                final content =
-                    article['content']?.toString().toLowerCase() ?? '';
-                final cityLower = city.toLowerCase();
-
-                return title.contains(cityLower) ||
-                    description.contains(cityLower) ||
-                    content.contains(cityLower);
-              })
-              .take(10)
-              .toList();
-        }
-
-        return articles;
+        final List<dynamic> articles = data['articles'];
+        return List<Map<String, dynamic>>.from(articles);
       } else {
-        throw Exception(
-          'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}',
-        );
+        // Handle non-200 status codes
+        //print('Error: ${response.statusCode}');
+        return [];
       }
     } catch (e) {
-      rethrow; // Hatayı yukarıya fırlat, çağıran fonksiyonun hatayı işlemesini sağla
+      // Handle any exceptions
+      //print('Exception: $e');
+      return [];
     }
   }
 }

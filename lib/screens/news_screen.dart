@@ -35,7 +35,7 @@ class _NewsScreenState extends State<NewsScreen> {
 
     try {
       // Replace with your actual API key
-      String apiKey = 'YOUR_API_KEY';
+      String apiKey = '959ea5e7296a44b4a2191fb009b46f33';
       String url =
           'https://newsapi.org/v2/everything?q=${widget.selectedCity}&language=tr&apiKey=$apiKey';
 
