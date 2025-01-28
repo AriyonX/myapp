@@ -1,193 +1,89 @@
-import 'dart:convert';
+
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../services/news_service.dart';
-import 'package:logger/logger.dart';
-
-class AppLogger {
-  static final Logger _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-      errorMethodCount: 5,
-      colors: true,
-      printEmojis: true,
-    ),
-    filter: ProductionFilter(),
-  );
-
-  static void debug(String message) => _logger.d(message);
-  static void info(String message) => _logger.i(message);
-  static void warning(String message) => _logger.w(message);
-  static void error(String message, [dynamic error, StackTrace? stackTrace]) =>
-      _logger.e(message, error: error, stackTrace: stackTrace);
-}
-
-
-class MainNewsScreen extends StatelessWidget {
-  final String? selectedCity;
-  final String selectedCountry;
-
-  const MainNewsScreen({Key? key, this.selectedCity, required this.selectedCountry}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("News")),
-      body: Column(
-        children: [
-          Text("Selected Country: $selectedCountry, Selected City: $selectedCity")
-        ],
-      ),
-    );
-  }
-}
+import '../services/news_service.dart'; // Import the NewsService
 
 class NewsScreen extends StatefulWidget {
   final String selectedCountry;
-  final String? selectedCity;
+  final String selectedCity;
 
   const NewsScreen({
     super.key,
     required this.selectedCountry,
-    this.selectedCity,
+    required this.selectedCity,
   });
 
   @override
   State<NewsScreen> createState() => _NewsScreenState();
 }
 
-class _NewsScreenState extends State<NewsScreen> {
+class _NewsScreenState extends
+ State<NewsScreen> {
+  late Future<List<NewsArticle>> newsFuture;
   final NewsService _newsService = NewsService();
-  List<Map<String, dynamic>> news = [];
-  bool isLoading = true;
-  String? errorMessage;
 
   @override
   void initState() {
     super.initState();
-    fetchNews();
-  }
-
-  Future<void> fetchNews() async {
-    try {
-      setState(() {
-        isLoading = true;
-        errorMessage = null;
-      });
-
-      final newsData = await _newsService.getNews(
-        country: widget.selectedCountry,
-        city: widget.selectedCity,
-      );
-      if (mounted) {
-        setState(() {
-          news = newsData;
-          isLoading = false;
-        });
-      }
-
-      setState(() {
-        news = newsData;
-        isLoading = false;
-      });
-    } catch (e) {
-      final errorMessage = 'Haberler yüklenirken bir hata oluştu: ${e.toString()}'; // Hata mesajını göster
-      //print('Hata Detayı: $e'); // Hata detayını konsola yazdır
-      setState(() {
-        isLoading = false;
-      });
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(errorMessage)), // Hata mesajını SnackBar'da göster
-        );
-      }
-    }
+    newsFuture = _newsService.getNews(
+        country: widget.selectedCountry, city: widget.selectedCity);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('${widget.selectedCountry} ${widget.selectedCity ?? ''} Haberleri'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: fetchNews,
-          ),
-        ],
+        title: const Text('News Screen'),
       ),
-      body: isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : RefreshIndicator(
-              onRefresh: fetchNews,
-              child: ListView.builder(
-                itemCount: news.length,
-                itemBuilder: (context, index) {
-                  final article = news[index];
-                  return Card(
-                    margin: const EdgeInsets.all(8.0),
+      body: FutureBuilder<List<NewsArticle>>(
+        future: newsFuture,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            AppLogger.error('Error loading news', snapshot.error);
+            return Center(
+                child: Text(
+                    'Haberler yüklenirken bir hata oluştu: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final List<NewsArticle> news = snapshot.data!;
+
+            if (news.isEmpty) {
+              return const Center(
+                child: Text('Bu şehir için haber bulunamadı.'),
+              );
+            }
+            return ListView.builder(
+              itemCount: news.length,
+              itemBuilder: (context, index) {
+                final article = news[index];
+                return Card(
+                  margin: const EdgeInsets.all(8.0),
+                  child: Padding(
+                    padding: const EdgeInsets.all(8.0),
                     child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        if (article['urlToImage'] != null)
-                          Image.network(
-                            article['urlToImage'],
-                            height: 200,
-                            width: double.infinity,
-                            fit: BoxFit.cover,
-                            loadingBuilder: (context, child, progress) {
-                              if (progress == null) {
-                                return child;
-                              } else {
-                                return Center(
-                                  child: CircularProgressIndicator(
-                                    value: progress.expectedTotalBytes != null
-                                        ? progress.cumulativeBytesLoaded /
-                                            (progress.expectedTotalBytes ?? 1)
-                                        : null,
-                                  ),
-                                );
-                              }
-                            },
-                            errorBuilder: (context, error, stackTrace) =>
-                                const SizedBox.shrink(),
-                          ),
-                        ListTile(
-                          title: Text(
-                            article['title'] ?? 'Başlık yok',
-                            style: const TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          subtitle: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const SizedBox(height: 8),
-                              Text(article['description'] ?? 'Açıklama yok'),
-                              const SizedBox(height: 8),
-                              Text(
-                                _formatDate(article['publishedAt']),
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontSize: 12,
-                                ),
-                              ),
-                            ],
-                          ),
+                        Text(
+                          article.title,
+                          style: const TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16),
                         ),
+                        const SizedBox(height: 8),
+                        Text(article.description),
+                        const SizedBox(height: 8),
+                        Text('Source: ${article.source}'),
+                        Text('Published At: ${article.publishedAt}'),
                       ],
                     ),
-                  );
-                },
-              ),
-            ),
+                  ),
+                );
+              },
+            );
+          } else {
+            return const Center(child: Text('Haber Yok.'));
+          }
+        },
+      ),
     );
-  }
-
-  String _formatDate(String? dateStr) {
-    if (dateStr == null) return '';
-    try {
-      final date = DateTime.parse(dateStr);
-      return '${date.day}/${date.month}/${date.year} ${date.hour}:${date.minute}';
-    } catch (e) {
-      return dateStr;
-    }
   }
 }

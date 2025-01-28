@@ -20,11 +20,38 @@ class AppLogger {
       _logger.e(message, error: error, stackTrace: stackTrace);
 }
 
-class NewsService {
-  static const String _apiKey =
-      'ff7c574326de47fa8a597c5bbe944221'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
-  static const String _baseUrl = 'https://newsapi.org/v2';
+class NewsArticle {
+  final String title;
+  final String description;
+  final String url;
+  final String? imageUrl; // If the API provides an image URL
+  final String source;
+  final DateTime publishedAt;
 
+  NewsArticle({
+    required this.title,
+    required this.description,
+    required this.url,
+    required this.imageUrl,
+    required this.source,
+    required this.publishedAt,
+  });
+
+  factory NewsArticle.fromJson(Map<String, dynamic> json) {
+    return NewsArticle(
+      title: json['title'] ?? '',
+      description: json['description'] ?? '',
+      url: json['url'] ?? '',
+      imageUrl: json['urlToImage'],
+      source: json['source']['name'] ?? '',
+      publishedAt: DateTime.parse(json['publishedAt']),
+    );
+  }
+}
+
+class NewsService {
+  static const String _apiKey ='ff7c574326de47fa8a597c5bbe944221'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
+  static const String _baseUrl = 'https://newsapi.org/v2';
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
     'Amerika Birleşik Devletleri': 'us',
@@ -68,53 +95,42 @@ class NewsService {
     'Endonezya': 'id',
   };
 
-  Future<List<Map<String, dynamic>>> getNews({
+  Future<List<NewsArticle>> getNews({
     required String country,
     String? city,
   }) async {
     try {
       String countryCode = _countryCodes[country] ?? 'tr';
 
-      AppLogger.info(
-        '$_baseUrl/top-headlines?country=$countryCode&apiKey=$_apiKey&pageSize=10',
-      );
+      // Şehir ismi varsa, API'ye gönderilen parametreyi değiştir.
+      Uri uri;
+      if (city != null && city.isNotEmpty) {
+         uri = Uri.parse('$_baseUrl/everything?q=$city&apiKey=$_apiKey&pageSize=10');
+        AppLogger.info(
+           '$_baseUrl/everything?q=$city&apiKey=$_apiKey&pageSize=10',
+        );
+      } else {
+       uri = Uri.parse('$_baseUrl/top-headlines?country=$countryCode&apiKey=$_apiKey&pageSize=10');
+        AppLogger.info(
+            '$_baseUrl/top-headlines?country=$countryCode&apiKey=$_apiKey&pageSize=10',
+          );
+      }
 
-      final response = await http.get(
-        Uri.parse(
-          '$_baseUrl/top-headlines?country=$countryCode&apiKey=$_apiKey',
-        ),
-        headers: {'Content-Type': 'application/json'},
-      );
+      final response = await http.get(uri, headers: {'Content-Type': 'application/json'});
 
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
-        final articles = List<Map<String, dynamic>>.from(data['articles']);
+        final List<dynamic> articlesJson = data['articles'];
 
-        if (city != null) {
-          return articles
-              .where((article) {
-                final title = article['title']?.toString().toLowerCase() ?? '';
-                final description =
-                    article['description']?.toString().toLowerCase() ?? '';
-                final content =
-                    article['content']?.toString().toLowerCase() ?? '';
-                final cityLower = city.toLowerCase();
-
-                return title.contains(cityLower) ||
-                    description.contains(cityLower) ||
-                    content.contains(cityLower);
-              })
-              .take(10)
-              .toList();
-        }
-
+        List<NewsArticle> articles =
+            articlesJson.map((articleJson) => NewsArticle.fromJson(articleJson)).toList();
         return articles;
       } else {
         throw Exception(
-          'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}',
-        );
+            'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}');
       }
     } catch (e) {
+      AppLogger.error('Haberleri alırken bir hata oluştu.', e);
       rethrow; // Hatayı yukarıya fırlat, çağıran fonksiyonun hatayı işlemesini sağla
     }
   }
