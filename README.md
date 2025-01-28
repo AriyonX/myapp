@@ -2,7 +2,7 @@
 
 ![HaberNoktası Logo](file:///C:/Users/ariyo/Downloads/Screenshot%202025-01-27%20225105.png)  
 
-HaberBurada, ülkeler ve şehirler bazında haberleri kolayca takip edebileceğiniz, güncel ve anlık bilgilere erişim sağlayan modern bir haber uygulamasıdır. Kullanıcı dostu arayüzü ve kategorilere göre filtreleme özellikleriyle, ihtiyacınız olan tüm haberler tek bir platformda!
+HaberNoktası, ülkeler ve şehirler bazında haberleri kolayca takip edebileceğiniz, güncel ve anlık bilgilere erişim sağlayan modern bir haber uygulamasıdır. Kullanıcı dostu arayüzü ve kategorilere göre filtreleme özellikleriyle, ihtiyacınız olan tüm haberler tek bir platformda!
 
 ---
 
