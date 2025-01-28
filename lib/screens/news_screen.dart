@@ -35,11 +35,10 @@ class _NewsScreenState extends State<NewsScreen> {
 
     try {
       // Replace with your actual API key
-      String apiKey = '959ea5e7296a44b4a2191fb009b46f33';
-      String url =
-          'https://newsapi.org/v2/everything?q=${widget.selectedCity}&language=tr&apiKey=$apiKey';
+      //const String apiKey = '959ea5e7296a44b4a2191fb009b46f33';
+      final String url ='http://newsapi.org/v2/top-headlines?q=Istanbul&language=tr&apiKey=959ea5e7296a44b4a2191fb009b46f33';
 
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.(url));
 
       if (response.statusCode == 200) {
         Map<String, dynamic> data = json.decode(response.body);
@@ -54,7 +53,9 @@ class _NewsScreenState extends State<NewsScreen> {
           throw Exception('Response does not contain articles');
         }
       } else {
-        throw Exception('Failed to load news');
+        throw Exception(
+          'Failed to load news. Status Code: ${response.statusCode}, Body: ${response.body}',
+        );
       }
     } catch (e) {
       setState(() {
@@ -67,30 +68,27 @@ class _NewsScreenState extends State<NewsScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('News in ${widget.selectedCity}'),
-      ),
+      appBar: AppBar(title: Text('News in ${widget.selectedCity}')),
       body: Center(
-        child: isLoading
-            ? const CircularProgressIndicator()
-            : errorMessage != null
+        child:
+            isLoading
+                ? const CircularProgressIndicator()
+                : errorMessage != null
                 ? Text(errorMessage!)
                 : ListView.builder(
-                    itemCount: articles.length,
-                    itemBuilder: (context, index) {
-                      final article = articles[index];
-                      return ListTile(
-                        title: Text(article['title'] ?? 'No Title'),
-                        subtitle: Text(article['description'] ?? 'No Description'),
-                        // Add more article details as needed
-                      );
-                    },
-                  ),
+                  itemCount: articles.length,
+                  itemBuilder: (context, index) {
+                    final article = articles[index];
+                    return ListTile(
+                      title: Text(article['title'] ?? 'No Title'),
+                      subtitle: Text(
+                        article['description'] ?? 'No Description',
+                      ),
+                      // Add more article details as needed
+                    );
+                  },
+                ),
       ),
     );
   }
 }
-
-
-
-
