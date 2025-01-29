@@ -1,30 +1,12 @@
+
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import 'package:logger/logger.dart';
-
-class AppLogger {
-  static final Logger _logger = Logger(
-    printer: PrettyPrinter(
-      methodCount: 0,
-      errorMethodCount: 5,
-      colors: true,
-      printEmojis: true,
-    ),
-    filter: ProductionFilter(),
-  );
-
-  static void debug(String message) => _logger.d(message);
-  static void info(String message) => _logger.i(message);
-  static void warning(String message) => _logger.w(message);
-  static void error(String message, [dynamic error, StackTrace? stackTrace]) =>
-      _logger.e(message, error: error, stackTrace: stackTrace);
-}
 
 class NewsArticle {
   final String title;
   final String description;
   final String url;
-  final String? imageUrl; // If the API provides an image URL
+  final String? imageUrl;
   final String source;
   final DateTime publishedAt;
 
@@ -32,13 +14,14 @@ class NewsArticle {
     required this.title,
     required this.description,
     required this.url,
-    required this.imageUrl,
+    this.imageUrl,
     required this.source,
     required this.publishedAt,
   });
 
   factory NewsArticle.fromJson(Map<String, dynamic> json) {
     return NewsArticle(
+
       title: json['title'] ?? '',
       description: json['description'] ?? '',
       url: json['url'] ?? '',
@@ -50,7 +33,8 @@ class NewsArticle {
 }
 
 class NewsService {
-  static const String _apiKey ='ff7c574326de47fa8a597c5bbe944221'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
+  static const String _apiKey =
+      '959ea5e7296a44b4a2191fb009b46f33'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
   static const String _baseUrl = 'https://newsapi.org/v2';
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
@@ -94,44 +78,44 @@ class NewsService {
     'Birleşik Arap Emirlikleri': 'ae',
     'Endonezya': 'id',
   };
+  // API anahtarını kontrol et
+  static void checkApiKey() {
+    if (_apiKey.isEmpty || _apiKey == 'YOUR_API_KEY') {
+      throw Exception(
+          'API anahtarı ayarlanmamış. Lütfen API anahtarınızı girin!');
+    }
+  }
 
-  Future<List<NewsArticle>> getNews({
-    required String country,
-    String? city,
-  }) async {
-    try {
-      String countryCode = _countryCodes[country] ?? 'tr';
+  Future<List<NewsArticle>> getTopHeadlinesByCountry(String country) async {
+    checkApiKey();
+    // Ülke kodunu kontrol et
+    if (!_countryCodes.containsKey(country)) {
+      throw Exception(
+          'Geçersiz ülke: $country. Lütfen geçerli bir ülke seçin.');
+    }
 
-      // Şehir ismi varsa, API'ye gönderilen parametreyi değiştir.
-      Uri uri;
-      if (city != null && city.isNotEmpty) {
-         uri = Uri.parse('$_baseUrl/everything?q=$city&apiKey=$_apiKey&pageSize=10');
-        AppLogger.info(
-           '$_baseUrl/everything?q=$city&apiKey=$_apiKey&pageSize=10',
-        );
+    final response = await http.get(
+      Uri.parse(
+          '$_baseUrl/top-headlines?country=${_countryCodes[country
+]}&apiKey=$_apiKey'),
+    );
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      if (data['status'] == 'ok') {
+        final List<dynamic> articles = data['articles'];
+        return articles
+            .map((article) => NewsArticle.fromJson(article))
+            .toList();
       } else {
-       uri = Uri.parse('$_baseUrl/top-headlines?country=$countryCode&apiKey=$_apiKey&pageSize=10');
-        AppLogger.info(
-            '$_baseUrl/top-headlines?country=$countryCode&apiKey=$_apiKey&pageSize=10',
-          );
-      }
-
-      final response = await http.get(uri, headers: {'Content-Type': 'application/json'});
-
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        final List<dynamic> articlesJson = data['articles'];
-
-        List<NewsArticle> articles =
-            articlesJson.map((articleJson) => NewsArticle.fromJson(articleJson)).toList();
-        return articles;
-      } else {
+        // API'den hata durumu döndüğünde
         throw Exception(
-            'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}');
+            'API hatası: ${data['message'] ?? 'Bilinmeyen bir hata oluştu.'}');
       }
-    } catch (e) {
-      AppLogger.error('Haberleri alırken bir hata oluştu.', e);
-      rethrow; // Hatayı yukarıya fırlat, çağıran fonksiyonun hatayı işlemesini sağla
+    } else {
+      // API'den HTTP hatası döndüğünde
+      throw Exception(
+          'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}');
     }
   }
 }
