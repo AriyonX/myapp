@@ -250,7 +250,6 @@ class _CitySelectionScreenState extends State<CitySelectionScreen> {
                       MaterialPageRoute(
                         builder: (context) => NewsScreen(
                           selectedCountry: widget.selectedCountry!,
-                          selectedCity: selectedCity!,
                         ),
                       ),
                     );

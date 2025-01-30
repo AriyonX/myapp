@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:news_app/services/news_service.dart';
-import 'package:news_app/utils/app_logger.dart';
+import '../models/news_article.dart';
+import '../services/news_service.dart';
+
 
 class NewsScreen extends StatefulWidget {
   final String? selectedCountry;
-  const NewsScreen({Key? key, required this.selectedCountry}) : super(key: key);
+
+  const NewsScreen({super.key, required this.selectedCountry});
 
   @override
   State<NewsScreen> createState() => _NewsScreenState();
@@ -12,13 +14,16 @@ class NewsScreen extends StatefulWidget {
 
 class _NewsScreenState extends State<NewsScreen> {
   late Future<List<NewsArticle>> newsFuture;
-  final NewsService _newsService = NewsService();
 
   @override
   void initState() {
     super.initState();
-    //selectedCountry e göre haberleri çek
-    newsFuture = _newsService.getTopHeadlinesByCountry(widget.selectedCountry ?? 'Türkiye');
+    newsFuture = _fetchNews();
+  }
+
+  Future<List<NewsArticle>> _fetchNews() async {
+    final newsService = NewsService();
+    return await newsService.getTopHeadlinesByCountry(widget.selectedCountry ?? 'Türkiye');
   }
 
   @override
@@ -33,10 +38,10 @@ class _NewsScreenState extends State<NewsScreen> {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return const Center(child: CircularProgressIndicator());
           } else if (snapshot.hasError) {
-            AppLogger.error('Error loading news', snapshot.error);
             return Center(
-                child: Text(
-                    'Haberler yüklenirken bir hata oluştu: ${snapshot.error}'));
+              child: Text(
+                  'An error occurred while loading the news: ${snapshot.error ?? 'An unknown error occurred.'}'),
+            );
           } else if (snapshot.hasData) {
             final List<NewsArticle> news = snapshot.data!;
 
@@ -72,7 +77,7 @@ class _NewsScreenState extends State<NewsScreen> {
             );
           } else {
             return const Center(
-                child: Text('Beklenmeyen bir hata oluştu.'));
+                child: Text('An unexpected error occurred.'));
           }
         },
       ),

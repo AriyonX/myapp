@@ -1,40 +1,13 @@
 
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../models/news_article.dart';
 
-class NewsArticle {
-  final String title;
-  final String description;
-  final String url;
-  final String? imageUrl;
-  final String source;
-  final DateTime publishedAt;
-
-  NewsArticle({
-    required this.title,
-    required this.description,
-    required this.url,
-    this.imageUrl,
-    required this.source,
-    required this.publishedAt,
-  });
-
-  factory NewsArticle.fromJson(Map<String, dynamic> json) {
-    return NewsArticle(
-
-      title: json['title'] ?? '',
-      description: json['description'] ?? '',
-      url: json['url'] ?? '',
-      imageUrl: json['urlToImage'],
-      source: json['source']['name'] ?? '',
-      publishedAt: DateTime.parse(json['publishedAt']),
-    );
-  }
-}
+ 
 
 class NewsService {
   static const String _apiKey =
-      '959ea5e7296a44b4a2191fb009b46f33'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
+      'YOUR_API_KEY'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
   static const String _baseUrl = 'https://newsapi.org/v2';
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
@@ -90,14 +63,14 @@ class NewsService {
     checkApiKey();
     // Ülke kodunu kontrol et
     if (!_countryCodes.containsKey(country)) {
-      throw Exception(
-          'Geçersiz ülke: $country. Lütfen geçerli bir ülke seçin.');
+      
+throw Exception(
+        'Geçersiz ülke: $country. Lütfen geçerli bir ülke seçin.');
     }
 
     final response = await http.get(
       Uri.parse(
-          '$_baseUrl/top-headlines?country=${_countryCodes[country
-]}&apiKey=$_apiKey'),
+          '$_baseUrl/top-headlines?country=${_countryCodes[country]}&apiKey=$_apiKey'),
     );
 
     if (response.statusCode == 200) {

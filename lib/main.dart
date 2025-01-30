@@ -17,7 +17,6 @@ class HaberNoktasi extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      debugShowCheckedModeBanner: false,
       title: 'Haber Noktası',
       theme: ThemeData(
         primarySwatch: Colors.blue,
@@ -28,6 +27,7 @@ class HaberNoktasi extends StatelessWidget {
         ),
       ),
       home: const CountrySelectionScreen(),
+        debugShowCheckedModeBanner: false,
     );
   }
 } 
