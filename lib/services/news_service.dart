@@ -6,8 +6,7 @@ import '../models/news_article.dart';
  
 
 class NewsService {
-  static const String _apiKey =
-      '959ea5e7296a44b4a2191fb009b46f33'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
+  static const String _apiKey ='959ea5e7296a44b4a2191fb009b46f33'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
   static const String _baseUrl = 'https://newsapi.org/v2';
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
@@ -53,7 +52,7 @@ class NewsService {
   };
   // API anahtarını kontrol et
   static void checkApiKey() {
-    if (_apiKey.isEmpty || _apiKey == 'YOUR_API_KEY') {
+    if (_apiKey.isEmpty || _apiKey == '959ea5e7296a44b4a2191fb009b46f33') {
       throw Exception(
           'API anahtarı ayarlanmamış. Lütfen API anahtarınızı girin!');
     }
