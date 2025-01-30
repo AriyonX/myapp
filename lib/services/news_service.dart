@@ -7,7 +7,7 @@ import '../models/news_article.dart';
 
 class NewsService {
   static const String _apiKey =
-      'YOUR_API_KEY'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
+      '959ea5e7296a44b4a2191fb009b46f33'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
   static const String _baseUrl = 'https://newsapi.org/v2';
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
