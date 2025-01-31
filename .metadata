@@ -15,10 +15,19 @@ migration:
     - platform: root
       create_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
       base_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
+    - platform: android
+      create_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
+      base_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
+    - platform: ios
+      create_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
+      base_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
     - platform: linux
       create_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
       base_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
     - platform: macos
+      create_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
+      base_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
+    - platform: web
       create_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
       base_revision: 45459707c029b168a61dcde1f1c1d64df9d529af
     - platform: windows
