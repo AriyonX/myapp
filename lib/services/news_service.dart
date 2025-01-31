@@ -57,6 +57,10 @@ class NewsService {
     final response = await http.get(
       Uri.parse(
           '$_baseUrl/top-headlines?country=${_countryCodes[country]}&apiKey=$_apiKey'),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
+        'Accept': 'application/json',
+      },
     );
 
     if (response.statusCode == 200) {
