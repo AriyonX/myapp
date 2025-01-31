@@ -1,12 +1,9 @@
-
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../models/news_article.dart';
 
- 
-
 class NewsService {
-  static const String _apiKey ='9b267a02a19c4a2c9c51dedf19791ef5'; // NewsAPI.org'dan alacağınız API anahtarı. **ÖNEMLİ: API anahtarınızı buraya girin!**
+  static const String _apiKey = '9b267a02a19c4a2c9c51dedf19791ef5';
   static const String _baseUrl = 'https://newsapi.org/v2';
   final Map<String, String> _countryCodes = {
     'Türkiye': 'tr',
@@ -50,21 +47,11 @@ class NewsService {
     'Birleşik Arap Emirlikleri': 'ae',
     'Endonezya': 'id',
   };
-  // API anahtarını kontrol et
-  static void checkApiKey() {
-    if (_apiKey.isEmpty || _apiKey == '959ea5e7296a44b4a2191fb009b46f33') {
-      throw Exception(
-          'API anahtarı ayarlanmamış. Lütfen API anahtarınızı girin!');
-    }
-  }
 
   Future<List<NewsArticle>> getTopHeadlinesByCountry(String country) async {
-    checkApiKey();
-    // Ülke kodunu kontrol et
     if (!_countryCodes.containsKey(country)) {
-      
-throw Exception(
-        'Geçersiz ülke: $country. Lütfen geçerli bir ülke seçin.');
+      throw Exception(
+          'Geçersiz ülke: $country. Lütfen geçerli bir ülke seçin.');
     }
 
     final response = await http.get(
@@ -80,12 +67,10 @@ throw Exception(
             .map((article) => NewsArticle.fromJson(article))
             .toList();
       } else {
-        // API'den hata durumu döndüğünde
         throw Exception(
             'API hatası: ${data['message'] ?? 'Bilinmeyen bir hata oluştu.'}');
       }
     } else {
-      // API'den HTTP hatası döndüğünde
       throw Exception(
           'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}');
     }
