@@ -1,13 +1,17 @@
-{pkgs}: {
+{ pkgs ? import <nixpkgs> {} }:
+
+{
   channel = "stable-24.05";
+  
   packages = [
     pkgs.jdk17
     pkgs.unzip
+    pkgs.flutter  # Ensure Flutter is included
   ];
-  idx.extensions = [
-    
-  ];
-  idx.previews = {
+
+  idx = {
+    extensions = [ ];  # Keep empty if no extensions are needed
+
     previews = {
       web = {
         command = [
@@ -16,13 +20,12 @@
           "--machine"
           "-d"
           "web-server"
-          "--web-hostname"
-          "0.0.0.0"
-          "--web-port"
-          "$PORT"
+          "--web-hostname=0.0.0.0"
+          "--web-port=$PORT"
         ];
         manager = "flutter";
       };
+
       android = {
         command = [
           "flutter"

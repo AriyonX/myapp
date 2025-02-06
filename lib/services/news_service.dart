@@ -54,29 +54,38 @@ class NewsService {
           'Geçersiz ülke: $country. Lütfen geçerli bir ülke seçin.');
     }
 
-    final response = await http.get(
-      Uri.parse(
-          '$_baseUrl/top-headlines?country=${_countryCodes[country]}&apiKey=$_apiKey'),
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-        'Accept': 'application/json',
-      },
-    );
-
-    if (response.statusCode == 200) {
-      final data = json.decode(response.body);
-      if (data['status'] == 'ok') {
-        final List<dynamic> articles = data['articles'];
-        return articles
-            .map((article) => NewsArticle.fromJson(article))
-            .toList();
+    final uri = Uri.parse('$_baseUrl/top-headlines?country=${_countryCodes[country]}');
+    
+    try {
+      final client = http.Client();
+      final response = await client.get(
+        uri,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:109.0) Gecko/20100101 Firefox/109.0',
+          'Accept': 'application/json',
+          'Connection': 'keep-alive',
+          'Authorization': 'Bearer $_apiKey',
+        },
+      );
+      
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        
+        if (data['status'] == 'ok') {
+          final List<dynamic> articles = data['articles'];
+          return articles.map((article) => NewsArticle.fromJson(article)).toList();
+        } else {
+          throw Exception(
+              'API hatası: ${data['message'] ?? 'Bilinmeyen bir hata oluştu.'}');
+        }
+      } else if (response.statusCode == 426) {
+        throw Exception('426 Hatası: API, daha yeni bir istemci sürümü veya HTTPS kullanımı gerektiriyor.');
       } else {
         throw Exception(
-            'API hatası: ${data['message'] ?? 'Bilinmeyen bir hata oluştu.'}');
+            'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode} - ${response.reasonPhrase}');
       }
-    } else {
-      throw Exception(
-          'Haberler yüklenirken bir hata oluştu. Hata kodu: ${response.statusCode}');
+    } catch (e) {
+      throw Exception('Bağlantı hatası: $e');
     }
   }
 }
